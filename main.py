@@ -1,12 +1,19 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from typing import List
 from course import CourseManager, Course
 from user import UserManager
 from fastapi.security import APIKeyHeader
+from pydantic import BaseModel
+
+class CourseCreation(BaseModel):
+    teacher_id_list: List[int]
+
+class StudentImport(BaseModel):
+    student_id_list: List[int]
 
 coursemanager = CourseManager()
 usermanager = UserManager()
-usermanager.create_a_user("John", "pwd", "studnet")
+usermanager.create_a_user("John", "pwd", "student")
 usermanager.create_a_user("Alice", "pwd", "teacher")
 usermanager.create_a_user("Jimmy", "pwd", "admin")
 
@@ -17,11 +24,10 @@ def welcome():
     return "Welcome to our miniCanvas!"
 
 @app.post("/courses/{coursecode}")
-def create_a_course(coursecode: str, 
-                    semester: str, 
-                    teacher_id_list: List[int]) -> int:
-    ### an admin should create a course
-    teacher_list = usermanager.find_users(teacher_id_list)
+def create_a_course(coursecode: str, semester: str, course_data: CourseCreation) -> int:
+    if not course_data.teacher_id_list:
+        raise HTTPException(status_code=400, detail="Teacher ID list must not be empty.")
+    teacher_list = usermanager.find_users(course_data.teacher_id_list)
     course_id = coursemanager.create_a_course(coursecode, semester, teacher_list)
     
     course = coursemanager.find_a_course(course_id)
@@ -30,10 +36,11 @@ def create_a_course(coursecode: str,
     return course_id
 
 @app.put("/courses/{courseid}/students")
-def import_students(courseid: int,
-                    student_id_list: List[int]) -> None:
+def import_students(courseid: int, student_data: StudentImport) -> None:
+    if not student_data.student_id_list:
+        raise HTTPException(status_code=400, detail="Student ID list must not be empty.")
     course = coursemanager.find_a_course(courseid)
-    student_list = usermanager.find_users(student_id_list)
+    student_list = usermanager.find_users(student_data.student_id_list)
     course.import_students(student_list)
     
     print(course.course_id)

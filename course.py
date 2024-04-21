@@ -57,4 +57,4 @@ class Course:
         return self.assignment_counter
 
     def __str__(self) -> str:
-        return f"ID: {self.course_id}, code: {self.course_code}, teachers: {self.teacher_list}. students: {self.student_list}"
+        return f"ID: {self.course_id}, code: {self.course_code}, teachers: {self.teacher_list}, students: {self.student_list}"
