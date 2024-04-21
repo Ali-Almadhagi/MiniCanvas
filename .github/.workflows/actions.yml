@@ -1,5 +1,4 @@
 name: Python CI
-run-time: ${{ github.actor }} tries to run the project
 on:
   push:
     branches:
@@ -14,9 +13,9 @@ jobs:
         with:
           python-version: '3.10'
       - name: Install dependencies
-      - run: |
+        run: |
           pip install -r requirements.txt
       - name: Run tests
         run: |
           pytest
-      
+   
